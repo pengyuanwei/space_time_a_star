@@ -14,7 +14,7 @@ setuptools.setup(
     url = 'https://github.com/pengyuanwei/Space-Time-A-Star',   # Provide either the link to your github or to your website
     description = 'A* search algorithm with an added time dimension to deal with dynamic obstacles.',   # Give a short description about your library
     long_description = long_description,
-    long_description_content_type = 'text/markdown'    
+    long_description_content_type = 'text/markdown',   
 
     license = 'MIT',    # Chose a license from here: https://help.github.com/articles/licensing-a-repository
     keywords = ['multi-agent-path-finding', 'anonymous-agent', 'conflict-based-search', 'mapf', 'cbs', 'a-star'],   # Keywords that define your package best
@@ -29,5 +29,5 @@ setuptools.setup(
         'Topic :: Software Development :: Build Tools',
         'License :: OSI Approved :: MIT License',   # Again, pick a license
     ],
-    python_requires = '>=3.5',
+    python_requires = '>=3.5'
 )
