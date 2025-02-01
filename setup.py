@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name = 'space-time-astar',         # How you named your package folder (MyLib)
+    name = 'stastar',         # How you named your package folder (MyLib)
     version = '1.0',      # Start with a small number and increase it with every change you make
     author = 'Haoran Peng',
     author_email = 'gavinsweden@gmail.com',
