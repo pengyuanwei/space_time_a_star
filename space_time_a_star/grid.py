@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
 '''
-Author: Haoran Peng
-Email: gavinsweden@gmail.com
+Modified based on [Space-Time-AStar](https://github.com/GavinPHR/Space-Time-AStar.git)
+Copyright (c) 2020 [Haoran Peng]
+Copyright (c) 2025 [Pengyuan Wei]
+Released under the MIT License
 '''
 from typing import Tuple
 import numpy as np
 
 class Grid:
-
     def __init__(self, grid_size, static_obstacles):
         self.grid_size = grid_size
-        self.minx, self.maxx, self.miny, self.maxy = self.calculate_boundaries(static_obstacles)
+        if static_obstacles.shape[0] == 0:
+            self.minx, self.maxx, self.miny, self.maxy = [0, 2000, 0, 1100]
+        else:
+            self.minx, self.maxx, self.miny, self.maxy = self.calculate_boundaries(static_obstacles)
         self.grid = self.make_grid(grid_size, self.minx, self.maxx, self.miny, self.maxy)
 
     @staticmethod

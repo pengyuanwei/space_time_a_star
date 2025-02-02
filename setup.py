@@ -11,7 +11,7 @@ setuptools.setup(
     author_email = 'gavinsweden@gmail.com',
     maintainer = "Pengyuan Wei",
     maintainer_email = "ucabpw3@ucl.ac.uk",
-    url = 'https://github.com/pengyuanwei/Space-Time-A-Star',   # Provide either the link to your github or to your website
+    url = 'https://github.com/pengyuanwei/space_time_a_star',   # Provide either the link to your github or to your website
     description = 'A* search algorithm with an added time dimension to deal with dynamic obstacles.',   # Give a short description about your library
     long_description = long_description,
     long_description_content_type = 'text/markdown',   
