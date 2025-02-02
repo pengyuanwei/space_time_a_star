@@ -5,7 +5,7 @@ Copyright (c) 2020 [Haoran Peng]
 Copyright (c) 2025 [Pengyuan Wei]
 Released under the MIT License
 '''
-from typing import Optional, Tuple, List, Dict, Set
+from typing import Tuple, List, Dict, Set
 from heapq import heappush, heappop
 import numpy as np
 from scipy.spatial import KDTree
@@ -18,20 +18,18 @@ from .state import State
 class Planner:
     def __init__(self, grid_size: int,
                        robot_radius: int,
-                       static_obstacles: Optional[List[Tuple[int, ...]]] = None):
+                       static_obstacles: List[Tuple[int, ...]]):
 
         self.grid_size = grid_size
         self.robot_radius = robot_radius
-        if static_obstacles is None:
-            static_obstacles = []
+
         np_static_obstacles = np.array(static_obstacles)
-        self.static_obstacles = KDTree(np_static_obstacles) if len(static_obstacles) > 0 else None
+        self.static_obstacles = KDTree(np_static_obstacles)
 
         # Make the grid according to the grid size
         self.grid = Grid(grid_size, np_static_obstacles)
         # Make a lookup table for looking up neighbours of a grid
         self.neighbour_table = NeighbourTable(self.grid.grid)
-
 
     '''
     An admissible and consistent heuristic for A*
@@ -48,11 +46,8 @@ class Planner:
     Check whether the nearest static obstacle is within radius
     '''
     def safe_static(self, grid_pos: np.ndarray) -> bool:
-        if self.static_obstacles is not None:
-            _, nn = self.static_obstacles.query(grid_pos)
-            return self.l2(grid_pos, self.static_obstacles.data[nn]) > self.robot_radius
-        else:
-            return True
+        _, nn = self.static_obstacles.query(grid_pos)
+        return self.l2(grid_pos, self.static_obstacles.data[nn]) > self.robot_radius
 
     '''
     Space-Time A*
@@ -141,6 +136,3 @@ class Planner:
             current = came_from[current]
             total_path.append(current.pos)
         return np.array(total_path[::-1])
-
-
-

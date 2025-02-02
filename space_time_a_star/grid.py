@@ -11,10 +11,8 @@ import numpy as np
 class Grid:
     def __init__(self, grid_size, static_obstacles):
         self.grid_size = grid_size
-        if static_obstacles.shape[0] == 0:
-            self.minx, self.maxx, self.miny, self.maxy = [0, 2000, 0, 1100]
-        else:
-            self.minx, self.maxx, self.miny, self.maxy = self.calculate_boundaries(static_obstacles)
+        # The first obstacle is the boundary of the map.
+        self.minx, self.maxx, self.miny, self.maxy = self.calculate_boundaries(static_obstacles)
         self.grid = self.make_grid(grid_size, self.minx, self.maxx, self.miny, self.maxy)
 
     @staticmethod
