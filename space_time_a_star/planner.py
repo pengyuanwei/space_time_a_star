@@ -48,6 +48,19 @@ class Planner:
     @staticmethod
     def l2(start: np.ndarray, goal: np.ndarray) -> int:
         return int(np.linalg.norm(start-goal, 2))  # L2 norm
+    
+    def elliptical_distance_sq(self, p1: np.ndarray, p2: np.ndarray) -> float:
+        """
+        计算椭球体归一化距离平方
+        - 水平方向安全半径: 2 * self.robot_radius
+        - 垂直方向安全半径: 4 * self.robot_radius (水平的两倍)
+        """
+        dx = (p1[0] - p2[0]) / (2 * self.robot_radius)  # 水平方向缩放
+        dy = (p1[1] - p2[1]) / (2 * self.robot_radius)
+        dz = 0
+        if self.three_dimensional and p1.size > 2 and p2.size > 2:
+            dz = (p1[2] - p2[2]) / (4 * self.robot_radius)  # 垂直方向缩放为水平的两倍
+        return dx**2 + dy**2 + dz**2
 
     '''
     Check whether the nearest static obstacle is within radius
@@ -68,25 +81,25 @@ class Planner:
 
         # Prepare dynamic obstacles
         dynamic_obstacles = dict((k, np.array(list(v))) for k, v in dynamic_obstacles.items())
-        # Assume dynamic obstacles are agents with same radius, distance needs to be 2*radius
         def safe_dynamic(grid_pos: np.ndarray, time: int) -> bool:
             nonlocal dynamic_obstacles
-            return all(self.l2(grid_pos, obstacle) > 2 * self.robot_radius
-                       for obstacle in dynamic_obstacles.setdefault(time, np.array([])))
-
+            for obstacle in dynamic_obstacles.setdefault(time, np.array([])):
+                if self.elliptical_distance_sq(grid_pos, obstacle) <= 1:
+                    return False
+            return True
+    
         # Prepare semi-dynamic obstacles, consider them static after specific timestamp
         if semi_dynamic_obstacles is None:
             semi_dynamic_obstacles = dict()
         else:
-            semi_dynamic_obstacles = dict((k, np.array(list(v))) for k, v in semi_dynamic_obstacles.items())
+            semi_dynamic_obstacles = dict((k, np.array(list(v))) for k, v in semi_dynamic_obstacles.items())    
         def safe_semi_dynamic(grid_pos: np.ndarray, time: int) -> bool:
             nonlocal semi_dynamic_obstacles
             for timestamp, obstacles in semi_dynamic_obstacles.items():
-                flag = True
                 if time >= timestamp:
-                    flag = all(self.l2(grid_pos, obstacle) > 2 * self.robot_radius for obstacle in obstacles)
-                if not flag:
-                    return False
+                    for obstacle in obstacles:
+                        if self.elliptical_distance_sq(grid_pos, obstacle) <= 1:
+                            return False
             return True
 
         if not self.three_dimensional:
