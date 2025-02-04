@@ -9,11 +9,19 @@ from typing import Tuple
 import numpy as np
 
 class Grid:
-    def __init__(self, grid_size, static_obstacles):
+    def __init__(self, 
+                 grid_size: int, 
+                 static_obstacles: np.array, 
+                 three_dimensional: bool=False):
+        
         self.grid_size = grid_size
         # The first obstacle is the boundary of the map.
-        self.minx, self.maxx, self.miny, self.maxy = self.calculate_boundaries(static_obstacles)
-        self.grid = self.make_grid(grid_size, self.minx, self.maxx, self.miny, self.maxy)
+        if not three_dimensional:
+            self.minx, self.maxx, self.miny, self.maxy = self.calculate_boundaries(static_obstacles)
+            self.grid = self.make_grid(grid_size, self.minx, self.maxx, self.miny, self.maxy)
+        else:
+            self.minx, self.maxx, self.miny, self.maxy, self.minz, self.maxz = self.calculate_boundaries_3d(static_obstacles)
+            self.grid = self.make_3d_grid(grid_size, self.minx, self.maxx, self.miny, self.maxy, self.minz, self.maxz)
 
     @staticmethod
     def calculate_boundaries(static_obstacles: np.ndarray) -> Tuple[int, int, int, int]:
@@ -21,6 +29,12 @@ class Grid:
         max_ = np.max(static_obstacles, axis=0)
         return min_[0], max_[0], min_[1], max_[1]
 
+    @staticmethod
+    def calculate_boundaries_3d(static_obstacles: np.ndarray) -> Tuple[int, int, int, int, int, int]:
+        min_ = np.min(static_obstacles, axis=0)
+        max_ = np.max(static_obstacles, axis=0)
+        return min_[0], max_[0], min_[1], max_[1], min_[2], max_[2]
+    
     @staticmethod
     def make_grid(grid_size: int, minx: int, maxx: int, miny: int, maxy: int) -> np.ndarray:
         # Calculate the size of the sides
@@ -38,6 +52,33 @@ class Grid:
                 grid[i][j] = np.array([x, y])
         return grid
 
+    # @staticmethod
+    # def make_2d_grid(grid_size: int, minx: int, maxx: int, miny: int, maxy: int) -> np.ndarray:
+    #     # 生成网格中心坐标
+    #     x = np.arange(minx + grid_size / 2, maxx, grid_size)
+    #     y = np.arange(miny + grid_size / 2, maxy, grid_size)
+
+    #     # 使用 meshgrid 生成网格
+    #     xx, yy = np.meshgrid(x, y, indexing='ij')
+
+    #     # 组合成 [x, y] 坐标
+    #     grid = np.stack([xx, yy], axis=-1)
+    #     return grid
+    
+    @staticmethod
+    def make_3d_grid(grid_size: int, minx: int, maxx: int, miny: int, maxy: int, minz: int, maxz: int) -> np.ndarray:
+        # 生成网格中心坐标
+        x = np.arange(minx + grid_size / 2, maxx, grid_size, dtype=np.int32)
+        y = np.arange(miny + grid_size / 2, maxy, grid_size, dtype=np.int32)
+        z = np.arange(minz + grid_size / 2, maxz, grid_size, dtype=np.int32)
+
+        # 使用 meshgrid 生成三维网格
+        xx, yy, zz = np.meshgrid(x, y, z, indexing='ij')
+
+        # 组合成 [x, y, z] 坐标
+        grid = np.stack([xx, yy, zz], axis=-1)
+        return grid
+
     '''
     Snap an arbitrary position to the center of the grid
     '''
@@ -49,3 +90,15 @@ class Grid:
         if j >= len(self.grid[0]):
             j -= 1
         return self.grid[i][j]
+    
+    def snap_to_3d_grid(self, position: np.ndarray) -> np.ndarray:
+        i = (position[0] - self.minx) // self.grid_size
+        j = (position[1] - self.miny) // self.grid_size
+        k = (position[2] - self.minz) // self.grid_size
+        if i >= len(self.grid[0]):
+            i -= 1
+        if j >= len(self.grid[1]):
+            j -= 1
+        if k >= len(self.grid[2]):
+            k -= 1
+        return self.grid[i][j][k]

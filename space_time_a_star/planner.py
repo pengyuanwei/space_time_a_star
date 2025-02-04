@@ -11,25 +11,32 @@ import numpy as np
 from scipy.spatial import KDTree
 
 from .neighbour_table import NeighbourTable
+from .neighbour_table_3d import NeighbourTable3D
 from .grid import Grid
 from .state import State
 
 
 class Planner:
-    def __init__(self, grid_size: int,
-                       robot_radius: int,
-                       static_obstacles: List[Tuple[int, ...]]):
+    def __init__(self, 
+                 grid_size: int,
+                 robot_radius: int,
+                 static_obstacles: List[Tuple[int, ...]],
+                 three_dimensional: bool=False):
 
         self.grid_size = grid_size
         self.robot_radius = robot_radius
+        self.three_dimensional = three_dimensional
 
         np_static_obstacles = np.array(static_obstacles)
         self.static_obstacles = KDTree(np_static_obstacles)
 
         # Make the grid according to the grid size
-        self.grid = Grid(grid_size, np_static_obstacles)
+        self.grid = Grid(grid_size, np_static_obstacles, three_dimensional)
         # Make a lookup table for looking up neighbours of a grid
-        self.neighbour_table = NeighbourTable(self.grid.grid)
+        if not three_dimensional:
+            self.neighbour_table = NeighbourTable(self.grid.grid)
+        else:
+            self.neighbour_table = NeighbourTable3D(self.grid.grid)
 
     '''
     An admissible and consistent heuristic for A*
@@ -52,10 +59,10 @@ class Planner:
     '''
     Space-Time A*
     '''
-    def plan(self, start: Tuple[int, int],
-                   goal: Tuple[int, int],
-                   dynamic_obstacles: Dict[int, Set[Tuple[int, int]]],
-                   semi_dynamic_obstacles:Dict[int, Set[Tuple[int, int]]] = None,
+    def plan(self, start: Tuple[int, ...],
+                   goal: Tuple[int, ...],
+                   dynamic_obstacles: Dict[int, Set[Tuple[int, ...]]],
+                   semi_dynamic_obstacles:Dict[int, Set[Tuple[int, ...]]] = None,
                    max_iter:int = 500,
                    debug:bool = False) -> np.ndarray:
 
@@ -82,9 +89,12 @@ class Planner:
                     return False
             return True
 
-
-        start = self.grid.snap_to_grid(np.array(start))
-        goal = self.grid.snap_to_grid(np.array(goal))
+        if not self.three_dimensional:
+            start = self.grid.snap_to_grid(np.array(start))
+            goal = self.grid.snap_to_grid(np.array(goal))
+        else:
+            start = self.grid.snap_to_3d_grid(np.array(start))
+            goal = self.grid.snap_to_3d_grid(np.array(goal))
 
         # Initialize the start state
         s = State(start, 0, 0, self.h(start, goal))
