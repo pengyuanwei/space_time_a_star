@@ -67,7 +67,7 @@ class Planner:
     '''
     def safe_static(self, grid_pos: np.ndarray) -> bool:
         _, nn = self.static_obstacles.query(grid_pos)
-        return self.l2(grid_pos, self.static_obstacles.data[nn]) > self.robot_radius
+        return self.l2(grid_pos, self.static_obstacles.data[nn]) >= self.robot_radius
 
     '''
     Space-Time A*
